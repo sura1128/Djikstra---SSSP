@@ -21,6 +21,7 @@ class Labor {
 
 	private int shortPath[][];
 	PriorityQueue<IntegerPair> pq;
+	private final int INFINITY = 1000000000;
 
 	public Labor() {
 
@@ -28,7 +29,6 @@ class Labor {
 
 	void PreProcess() {
 		shortPath = new int[V][V];
-		
 
 		for (int i = 0; (i < V) && (i < 10); i++) {
 			pq = new PriorityQueue<IntegerPair>();
@@ -42,14 +42,13 @@ class Labor {
 
 		if (s == t) {
 			ans = 0;
-		} 
-		else {
+		} else {
 			if (shortPath[s][t] == 0) {
 				ans = -1;
 			} else {
 				ans = shortPath[s][t];
 			}
-			
+
 		}
 		return ans;
 	}
@@ -62,7 +61,7 @@ class Labor {
 		// Assign tentative distance 0 to source, and 999 to others.
 
 		for (int i = 0; i < V; i++) {
-			distance[i] = 999;
+			distance[i] = INFINITY;
 		}
 
 		distance[source] = 0;
@@ -73,38 +72,28 @@ class Labor {
 			IntegerPair u = pq.remove();
 			visited[u.first()] = true;
 
-			Vector<IntegerPair> neighbours = AdjList.get(u.first());
+			if (distance[u.first()] == u.second()) {
+				Vector<IntegerPair> neighbours = AdjList.get(u.first());
 
-			for (int i = 0; i < neighbours.size(); i++) {
-				IntegerPair v = neighbours.get(i);
+				for (int i = 0; i < neighbours.size(); i++) {
+					IntegerPair v = neighbours.get(i);
 
-				if (visited[v.first()] == false) {
-					if (distance[v.first()] > distance[u.first()] + v.second()) {
-						distance[v.first()] = distance[u.first()] + v.second();
+					if (visited[v.first()] == false) {
 
-						shortPath[source][v.first()] = distance[v.first()];
+						if (distance[v.first()] > distance[u.first()] + v.second()) {
+							distance[v.first()] = distance[u.first()] + v.second();
 
-						IntegerPair updated_element = new IntegerPair(v.first(), distance[v.first()]);
-						pq.add(updated_element);
+							shortPath[source][v.first()] = distance[v.first()];
+							pq.add(new IntegerPair(v.first(), distance[v.first()]));
+						}
 
 					}
 
 				}
-
 			}
 
 		}
 
-	}
-
-	void printMat() {
-		System.out.println();
-		for (int i = 0; i < V; i++) {
-			for (int j = 0; j < V; j++) {
-				System.out.print(shortPath[i][j] + " ");
-			}
-			System.out.println();
-		}
 	}
 
 	void run() throws Exception {
