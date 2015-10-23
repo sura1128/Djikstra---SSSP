@@ -19,8 +19,8 @@ class Labor {
 													// too, as the weight of
 													// edge
 
-	private boolean visited[];
 	private int shortPath[][];
+	PriorityQueue<IntegerPair> pq;
 
 	public Labor() {
 
@@ -28,48 +28,83 @@ class Labor {
 
 	void PreProcess() {
 		shortPath = new int[V][V];
+		
 
-		for (int i = 0; i < V; i++) {
-			visited = new boolean[V];
-			DFS(i, i, 0);
+		for (int i = 0; (i < V) && (i < 10); i++) {
+			pq = new PriorityQueue<IntegerPair>();
+			shortestPath(i);
 		}
 
 	}
-	
 
 	int Query(int s, int t, int k) {
 		int ans = -1;
 
-		ans = shortPath[s][t];
-
+		if (s == t) {
+			ans = 0;
+		} 
+		else {
+			if (shortPath[s][t] == 0) {
+				ans = -1;
+			} else {
+				ans = shortPath[s][t];
+			}
+			
+		}
 		return ans;
 	}
 
-	void DFS(int source, int u, int weight) {
+	void shortestPath(int source) {
 
-		visited[u] = true;
-		
-		Vector<IntegerPair> neighbours = AdjList.get(u);
+		int distance[] = new int[V];
+		boolean visited[] = new boolean[V];
 
-		for (int i = 0; i < neighbours.size(); i++) {
-			int x = neighbours.get(i).first();
-			int w = neighbours.get(i).second();
+		// Assign tentative distance 0 to source, and 999 to others.
 
-			if (visited[x] == false) {
-				if (source == x) {
-					shortPath[source][x] = 0;
-					shortPath[x][source] = 0;
-				} else {
-						shortPath[source][x] = weight + w;
-						shortPath[x][source] = shortPath[source][x];
-					DFS(source, x, shortPath[source][x]);
+		for (int i = 0; i < V; i++) {
+			distance[i] = 999;
+		}
+
+		distance[source] = 0;
+		pq.add(new IntegerPair(source, 0));
+
+		while (!pq.isEmpty()) {
+
+			IntegerPair u = pq.remove();
+			visited[u.first()] = true;
+
+			Vector<IntegerPair> neighbours = AdjList.get(u.first());
+
+			for (int i = 0; i < neighbours.size(); i++) {
+				IntegerPair v = neighbours.get(i);
+
+				if (visited[v.first()] == false) {
+					if (distance[v.first()] > distance[u.first()] + v.second()) {
+						distance[v.first()] = distance[u.first()] + v.second();
+
+						shortPath[source][v.first()] = distance[v.first()];
+
+						IntegerPair updated_element = new IntegerPair(v.first(), distance[v.first()]);
+						pq.add(updated_element);
+
+					}
+
 				}
 
-				
 			}
 
 		}
 
+	}
+
+	void printMat() {
+		System.out.println();
+		for (int i = 0; i < V; i++) {
+			for (int j = 0; j < V; j++) {
+				System.out.print(shortPath[i][j] + " ");
+			}
+			System.out.println();
+		}
 	}
 
 	void run() throws Exception {
@@ -165,10 +200,10 @@ class IntegerPair implements Comparable<IntegerPair> {
 	}
 
 	public int compareTo(IntegerPair o) {
-		if (!this.first().equals(o.first()))
-			return this.first() - o.first();
-		else
+		if (!this.second().equals(o.second()))
 			return this.second() - o.second();
+		else
+			return this.first() - o.first();
 	}
 
 	Integer first() {
