@@ -19,82 +19,79 @@ class Labor {
 													// too, as the weight of
 													// edge
 
-	private int shortPath[][];
-	PriorityQueue<IntegerPair> pq;
+	PriorityQueue<IntegerTriple> pq;
 	private final int INFINITY = 1000000000;
+
+	private int distMat[][];
+
+	List<IntegerTriple> paths;
 
 	public Labor() {
 
 	}
 
 	void PreProcess() {
-		shortPath = new int[V][V];
-
-		for (int i = 0; (i < V) && (i < 10); i++) {
-			pq = new PriorityQueue<IntegerPair>();
-			shortestPath(i);
-		}
 
 	}
 
 	int Query(int s, int t, int k) {
 		int ans = -1;
 
-		if (s == t) {
-			ans = 0;
-		} else {
-			if (shortPath[s][t] == 0) {
-				ans = -1;
-			} else {
-				ans = shortPath[s][t];
-			}
 
-		}
+		pq = new PriorityQueue<IntegerTriple>();
+		distMat = new int[V][V + 1];
+
+		ans = shortestPath(s, t, k);
+
 		return ans;
 	}
 
-	void shortestPath(int source) {
+	int shortestPath(int source, int destination, int k) {
 
-		int distance[] = new int[V];
-		boolean visited[] = new boolean[V];
-
-		// Assign tentative distance 0 to source, and 999 to others.
+		int hops = 1;
+		int path = -1;
 
 		for (int i = 0; i < V; i++) {
-			distance[i] = INFINITY;
+			Arrays.fill(distMat[i], INFINITY);
 		}
 
-		distance[source] = 0;
-		pq.add(new IntegerPair(source, 0));
+		distMat[source][1] = 0;
+		pq.add(new IntegerTriple(0, 1, source));
 
 		while (!pq.isEmpty()) {
 
-			IntegerPair u = pq.remove();
-			visited[u.first()] = true;
+			IntegerTriple u = pq.remove();
 
-			if (distance[u.first()] == u.second()) {
-				Vector<IntegerPair> neighbours = AdjList.get(u.first());
+			Vector<IntegerPair> neighbours = AdjList.get(u.third());
+
+			// u==t condition
+			if (u.third() == destination) {
+				path = u.first();
+				break;
+			} 
+
+			// h[u] < k condition
+			if (u.second() < k) {
 
 				for (int i = 0; i < neighbours.size(); i++) {
 					IntegerPair v = neighbours.get(i);
+					hops = u.second() + 1;
 
-					if (visited[v.first()] == false) {
 
-						if (distance[v.first()] > distance[u.first()] + v.second()) {
-							distance[v.first()] = distance[u.first()] + v.second();
-
-							shortPath[source][v.first()] = distance[v.first()];
-							pq.add(new IntegerPair(v.first(), distance[v.first()]));
-						}
-
+					if (distMat[v.first()][hops] > u.first() + v.second()) {
+						distMat[v.first()][hops] = u.first() + v.second();
+						pq.add(new IntegerTriple(distMat[v.first()][hops], hops, v.first()));
 					}
-
 				}
+
 			}
 
 		}
+		return path;
 
 	}
+
+	
 
 	void run() throws Exception {
 		// you can alter this method if you need to do so
@@ -201,5 +198,36 @@ class IntegerPair implements Comparable<IntegerPair> {
 
 	Integer second() {
 		return _second;
+	}
+}
+
+class IntegerTriple implements Comparable<IntegerTriple> {
+	Integer _first, _second, _third;
+
+	public IntegerTriple(Integer f, Integer s, Integer t) {
+		_first = f;
+		_second = s;
+		_third = t;
+	}
+
+	public int compareTo(IntegerTriple o) {
+		if (!this.first().equals(o.first()))
+			return this.first() - o.first();
+		else if (!this.second().equals(o.second()))
+			return this.second() - o.second();
+		else
+			return this.third() - o.third();
+	}
+
+	Integer first() {
+		return _first;
+	}
+
+	Integer second() {
+		return _second;
+	}
+
+	Integer third() {
+		return _third;
 	}
 }
